@@ -6,6 +6,8 @@
 ![NPM Downloads](https://img.shields.io/npm/dm/@the-software-compagny/parser_ldap_rfc4512)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
+![RFC 4512 LDAP Schema Parser banner](static/banner.png)
+
 A robust TypeScript parser for LDAP schema definitions based on RFC 4512, featuring a complete CLI tool and comprehensive parsing capabilities using PEG.js grammar.
 
 ## Overview
