@@ -1,9 +1,9 @@
 # RFC 4512 LDAP Schema Parser
 
-[![CI](https://github.com/The-Software-Compagny/parser_ldap_rfc4512/actions/workflows/ci.yml/badge.svg)](https://github.com/The-Software-Compagny/parser_ldap_rfc4512/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/The-Software-Compagny/parser_ldap_rfc4512/branch/main/graph/badge.svg)](https://codecov.io/gh/The-Software-Compagny/parser_ldap_rfc4512)
-![NPM Version](https://img.shields.io/npm/v/%40the-software-compagny%2Fparser_ldap_rfc4512)
-![NPM Downloads](https://img.shields.io/npm/dm/@the-software-compagny/parser_ldap_rfc4512)
+[![CI](https://github.com/tacxou/parser_ldap_rfc4512/actions/workflows/ci.yml/badge.svg)](https://github.com/tacxou/parser_ldap_rfc4512/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tacxou/parser_ldap_rfc4512/branch/main/graph/badge.svg)](https://codecov.io/gh/tacxou/parser_ldap_rfc4512)
+![NPM Version](https://img.shields.io/npm/v/%40tacxou%2Fparser_ldap_rfc4512)
+![NPM Downloads](https://img.shields.io/npm/dm/@tacxou/parser_ldap_rfc4512)
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 ![RFC 4512 LDAP Schema Parser banner](static/banner.png)
@@ -50,19 +50,19 @@ This project provides a comprehensive parser for LDAP (Lightweight Directory Acc
 
 ```bash
 # Install as a library
-npm install @the-software-compagny/parser_ldap_rfc4512
+npm install @tacxou/parser_ldap_rfc4512
 
 # Or with Bun
-bun add @the-software-compagny/parser_ldap_rfc4512
+bun add @tacxou/parser_ldap_rfc4512
 
 # Install globally for CLI usage
-npm install -g @the-software-compagny/parser_ldap_rfc4512
+npm install -g @tacxou/parser_ldap_rfc4512
 ```
 
 ### Basic Usage
 
 ```typescript
-import { parseSchema } from '@the-software-compagny/parser_ldap_rfc4512'
+import { parseSchema } from '@tacxou/parser_ldap_rfc4512'
 
 // Parse an object class definition
 try {
@@ -217,7 +217,7 @@ OpenLDAP uses numeric prefixes in curly braces to maintain the order of schema d
 The parser automatically detects and removes OpenLDAP index prefixes:
 
 ```typescript
-import { parseSchema } from '@the-software-compagny/parser_ldap_rfc4512'
+import { parseSchema } from '@tacxou/parser_ldap_rfc4512'
 
 // Both formats parse to identical results
 const openLdapFormat = '{57}( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )'
@@ -321,7 +321,7 @@ We welcome contributions! Please see our contributing guidelines for details on:
 
 ```bash
 # Clone the repository
-git clone https://github.com/The-Software-Compagny/parser_ldap_rfc4512.git
+git clone https://github.com/tacxou/parser_ldap_rfc4512.git
 cd parser_ldap_rfc4512
 
 # Install dependencies
@@ -343,11 +343,11 @@ This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICE
 
 ## 🔗 Links
 
-- **NPM Package**: [@the-software-compagny/parser_ldap_rfc4512](https://www.npmjs.com/package/@the-software-compagny/parser_ldap_rfc4512)
-- **GitHub Repository**: [parser_ldap_rfc4512](https://github.com/The-Software-Compagny/parser_ldap_rfc4512)
-- **Issue Tracker**: [GitHub Issues](https://github.com/The-Software-Compagny/parser_ldap_rfc4512/issues)
-- **CI/CD Pipeline**: [GitHub Actions](https://github.com/The-Software-Compagny/parser_ldap_rfc4512/actions)
-- **Code Coverage**: [Codecov](https://codecov.io/gh/The-Software-Compagny/parser_ldap_rfc4512)
+- **NPM Package**: [@tacxou/parser_ldap_rfc4512](https://www.npmjs.com/package/@tacxou/parser_ldap_rfc4512)
+- **GitHub Repository**: [parser_ldap_rfc4512](https://github.com/tacxou/parser_ldap_rfc4512)
+- **Issue Tracker**: [GitHub Issues](https://github.com/tacxou/parser_ldap_rfc4512/issues)
+- **CI/CD Pipeline**: [GitHub Actions](https://github.com/tacxou/parser_ldap_rfc4512/actions)
+- **Code Coverage**: [Codecov](https://codecov.io/gh/tacxou/parser_ldap_rfc4512)
 
 ## 📚 Related Resources
 
@@ -357,4 +357,4 @@ This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICE
 
 ---
 
-Made with ❤️ by [The Software Compagny](https://github.com/The-Software-Compagny)
+Made with ❤️ by [The Software Compagny](https://github.com/tacxou)
