@@ -16,6 +16,7 @@
     }
   ],
   "license": "BSD-3-Clause",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "rfc4512-parser": "dist/cli.js"
@@ -30,17 +31,22 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/yargs": "^17.0.33",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
+    "@types/yargs": "^17.0.35",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
     "cpr": "^3.0.1",
-    "eslint": "^9.32.0",
-    "peggy": "^5.0.5",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "yargs": "^17.7.2"
+    "eslint": "^9.39.2",
+    "peggy": "^5.0.6",
+    "prettier": "^3.7.4",
+    "rimraf": "^6.1.2",
+    "yargs": "^18.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
-  }
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "bun": ">=1.0.0"
+  },
+  "packageManager": "bun@1.0.0"
 }
