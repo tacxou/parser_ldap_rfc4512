@@ -1,6 +1,6 @@
 {
   "name": "@tacxou/parser_ldap_rfc4512",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A TypeScript parser for LDAP schema definitions based on RFC 4512, using PEG.js grammar",
   "repository": "https://github.com/tacxou/parser_ldap_rfc4512.git",
   "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
@@ -17,36 +17,57 @@
   ],
   "license": "BSD-3-Clause",
   "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "rfc4512-parser": "dist/cli.js"
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
+  "bin": {
+    "rfc4512-parser": "./dist/cli.js"
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "prebuild": "rimraf dist",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --splitting && bun build ./src/cli.ts --outdir ./dist --target node",
-    "postbuild": "cpr README.md dist/README.md && cpr LICENSE dist/LICENSE && cpr package.json dist/package.json",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
-    "test:cli": "bun test test/cli.test.ts"
+    "build:grammar": "node scripts/build-grammar.mjs",
+    "prebuild": "yarn build:grammar",
+    "build": "tsup",
+    "pretest": "yarn build:grammar",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cli": "vitest run test/cli.test.ts",
+    "pretest:coverage": "yarn build:grammar",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@biomejs/biome": "^2.5.8",
+    "@types/node": "^26.2.0",
     "@types/yargs": "^17.0.35",
-    "@typescript-eslint/eslint-plugin": "^8.50.0",
-    "@typescript-eslint/parser": "^8.50.0",
-    "cpr": "^3.0.1",
-    "eslint": "^9.39.2",
+    "@vitest/coverage-v8": "^4.1.10",
     "peggy": "^5.0.6",
-    "prettier": "^3.7.4",
-    "rimraf": "^6.1.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vite": "^8.2.1",
+    "vitest": "^4.1.10",
     "yargs": "^18.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "engines": {
-    "node": ">=22.0.0",
-    "bun": ">=1.0.0"
+    "node": ">=22.0.0"
   },
-  "packageManager": "bun@1.0.0"
+  "packageManager": "yarn@1.22.22"
 }

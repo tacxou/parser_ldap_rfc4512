@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'bun:test'
-import { RFC4512Parser, type LDAPSyntaxInterface } from '../src'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import { type LDAPSyntaxInterface, RFC4512Parser } from '../src'
 
 /**
  * Test suite for LDAP Syntax definitions (olcLdapSyntaxes) using sample file.

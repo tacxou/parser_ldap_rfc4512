@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { LDAPAttributeTypeInterface, RFC4512Parser } from '../src'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { type LDAPAttributeTypeInterface, RFC4512Parser } from '../src'
 
 /**
  * Test suite for RFC4512Parser - Multiple X-* Extensions Support

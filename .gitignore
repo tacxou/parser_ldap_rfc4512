@@ -2,6 +2,11 @@ dist/
 node_modules/
 coverage/
 
+# Precompiled from src/_grammars/rfc4512.pegjs by scripts/build-grammar.mjs
+# (run automatically via `build:grammar` / `prebuild` / `pretest`).
+src/_grammars/rfc4512.generated.js
+src/_grammars/rfc4512.generated.d.ts
+
 yarn-debug.log*
 yarn-error.log*
 .env

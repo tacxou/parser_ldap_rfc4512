@@ -1,5 +1,5 @@
-import type { LDAPObjectClassInterface } from '../interfaces/ldap-object-class.interface'
 import type { LDAPAttributeTypeInterface } from '../interfaces/ldap-attribute-type.interface'
+import type { LDAPObjectClassInterface } from '../interfaces/ldap-object-class.interface'
 import type { LDAPSyntaxInterface } from '../interfaces/ldap-syntax.interface'
 
 /**

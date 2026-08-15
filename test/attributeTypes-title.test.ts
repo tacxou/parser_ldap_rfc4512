@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { RFC4512Parser } from '../src'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { RFC4512Parser } from '../src'
 
 /**
  * Test suite for RFC4512Parser - AttributeTypes LDIF parsing functionality
@@ -41,8 +41,8 @@ describe('RFC4512Parser - title AttributeType LDIF', () => {
   it('should successfully parse the title attributeType LDIF file', () => {
     const result = parser.parseSchema(ldifContent)
 
-        expect(result).toBeDefined()
-    })
+    expect(result).toBeDefined()
+  })
 
   /**
    * Test: OID extraction

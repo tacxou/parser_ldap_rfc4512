@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { LDAPObjectClassInterface, RFC4512Parser } from '../src'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { type LDAPObjectClassInterface, RFC4512Parser } from '../src'
 
 /**
  * Test suite for OpenLDAP cn=config prefix support in RFC4512Parser
@@ -23,21 +23,21 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
   it('should remove various OpenLDAP index prefixes', () => {
     const testCases = [
       {
-        input: '{0}( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
-        expectedName: 'cn'
+        input: "{0}( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+        expectedName: 'cn',
       },
       {
-        input: '{57}( 1.3.6.1.4.1.7165.2.1.80 NAME \'sambaSupportedEncryptionTypes\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )',
-        expectedName: 'sambaSupportedEncryptionTypes'
+        input: "{57}( 1.3.6.1.4.1.7165.2.1.80 NAME 'sambaSupportedEncryptionTypes' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )",
+        expectedName: 'sambaSupportedEncryptionTypes',
       },
       {
-        input: '{123}( 2.5.6.6 NAME \'person\' DESC \'RFC2256: a person\' SUP top STRUCTURAL MUST ( sn $ cn ) )',
-        expectedName: 'person'
+        input: "{123}( 2.5.6.6 NAME 'person' DESC 'RFC2256: a person' SUP top STRUCTURAL MUST ( sn $ cn ) )",
+        expectedName: 'person',
       },
       {
-        input: '{9999}( 1.2.3.4 NAME \'testAttribute\' DESC \'Test attribute\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
-        expectedName: 'testAttribute'
-      }
+        input: "{9999}( 1.2.3.4 NAME 'testAttribute' DESC 'Test attribute' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+        expectedName: 'testAttribute',
+      },
     ]
 
     testCases.forEach(({ input, expectedName }) => {
@@ -52,13 +52,13 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
    */
   it('should handle prefixes with various whitespace patterns', () => {
     const testCases = [
-      '  {0}  ( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
-      '\t{0}\t( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
-      '{0}( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )', // No extra spaces
-      '   {0}( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )' // Leading spaces only
+      "  {0}  ( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+      "\t{0}\t( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+      "{0}( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )", // No extra spaces
+      "   {0}( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )", // Leading spaces only
     ]
 
-    testCases.forEach(input => {
+    testCases.forEach((input) => {
       const result = parser.parseSchema(input)
       expect(result.name).toBe('cn')
       expect(result.oid).toBe('2.5.4.3')
@@ -71,11 +71,11 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
    */
   it('should process non-prefixed schemas normally', () => {
     const testCases = [
-      '( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
-      '( 2.5.6.6 NAME \'person\' DESC \'RFC2256: a person\' SUP top STRUCTURAL MUST ( sn $ cn ) )'
+      "( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
+      "( 2.5.6.6 NAME 'person' DESC 'RFC2256: a person' SUP top STRUCTURAL MUST ( sn $ cn ) )",
     ]
 
-    testCases.forEach(input => {
+    testCases.forEach((input) => {
       const result = parser.parseSchema(input)
       expect(result).toBeDefined()
       expect(result.oid).toBeDefined()
@@ -88,7 +88,8 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
    * Verifies that ObjectClass definitions with prefixes are parsed correctly
    */
   it('should handle ObjectClass schemas with OpenLDAP prefixes', () => {
-    const objectClassWithPrefix = '{5}( 2.5.6.6 NAME \'person\' DESC \'RFC2256: a person\' SUP top STRUCTURAL MUST ( sn $ cn ) MAY ( userPassword $ telephoneNumber $ seeAlso $ description ) )'
+    const objectClassWithPrefix =
+      "{5}( 2.5.6.6 NAME 'person' DESC 'RFC2256: a person' SUP top STRUCTURAL MUST ( sn $ cn ) MAY ( userPassword $ telephoneNumber $ seeAlso $ description ) )"
 
     const result = parser.parseSchema<LDAPObjectClassInterface>(objectClassWithPrefix)
 
@@ -107,7 +108,7 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
    * Verifies that extractOID and extractName work correctly with prefixed schemas
    */
   it('should work with utility methods for prefixed schemas', () => {
-    const prefixedSchema = '{42}( 1.2.3.4.5 NAME \'testAttribute\' DESC \'Test attribute with prefix\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )'
+    const prefixedSchema = "{42}( 1.2.3.4.5 NAME 'testAttribute' DESC 'Test attribute with prefix' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )"
 
     const oid = parser.extractOID(prefixedSchema)
     const name = parser.extractName(prefixedSchema)
@@ -121,7 +122,7 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
    * Verifies that isValidSchema correctly identifies valid prefixed schemas
    */
   it('should validate prefixed schemas correctly', () => {
-    const validPrefixedSchema = '{100}( 2.5.4.3 NAME \'cn\' DESC \'Common Name\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )'
+    const validPrefixedSchema = "{100}( 2.5.4.3 NAME 'cn' DESC 'Common Name' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )"
     const invalidPrefixedSchema = '{100}( invalid schema definition )'
 
     expect(parser.isValidSchema(validPrefixedSchema)).toBe(true)
@@ -135,13 +136,13 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
   it('should handle edge cases with prefix patterns', () => {
     const testCases = [
       // Single digit
-      '{0}( 2.5.4.3 NAME \'test0\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "{0}( 2.5.4.3 NAME 'test0' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Multiple digits
-      '{12345}( 2.5.4.3 NAME \'test12345\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "{12345}( 2.5.4.3 NAME 'test12345' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Prefix with no spaces
-      '{1}( 2.5.4.3 NAME \'test1\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "{1}( 2.5.4.3 NAME 'test1' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Prefix with multiple spaces
-      '{2}   ( 2.5.4.3 NAME \'test2\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )'
+      "{2}   ( 2.5.4.3 NAME 'test2' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
     ]
 
     testCases.forEach((input, index) => {
@@ -160,16 +161,16 @@ describe('RFC4512Parser - OpenLDAP cn=config Prefix Support', () => {
   it('should not modify invalid prefix-like patterns', () => {
     const testCases = [
       // Not at start of string
-      'test {0}( 2.5.4.3 NAME \'cn\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "test {0}( 2.5.4.3 NAME 'cn' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Missing opening brace
-      '0}( 2.5.4.3 NAME \'cn\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "0}( 2.5.4.3 NAME 'cn' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Missing closing brace
-      '{0( 2.5.4.3 NAME \'cn\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )',
+      "{0( 2.5.4.3 NAME 'cn' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
       // Non-numeric content
-      '{abc}( 2.5.4.3 NAME \'cn\' DESC \'Test\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )'
+      "{abc}( 2.5.4.3 NAME 'cn' DESC 'Test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )",
     ]
 
-    testCases.forEach(input => {
+    testCases.forEach((input) => {
       // These should fail to parse because they're not valid RFC 4512 format
       expect(parser.isValidSchema(input)).toBe(false)
     })

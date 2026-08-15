@@ -14,27 +14,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Run tests
-        run: bun test
-
-      - name: Build project
-        run: bun run build
-
-      - name: Setup Node.js for NPM
+      # A single Node setup for both the build and the publish. It used to be
+      # split: Bun ran the build, then a second setup-node pinned Node 18 just
+      # for `npm publish` — a version `engines.node: >=22.0.0` already refused.
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 22.x
+          cache: yarn
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check formatting and lint
+        run: yarn lint
+
+      - name: Check types
+        run: yarn typecheck
+
+      - name: Run tests
+        # `pretest` regenerates the grammar; no separate step needed.
+        run: yarn test
+
+      - name: Build project
+        run: yarn build
+
       - name: Publish to npm
-        run: cd dist && npm publish --access public
+        # Published from the repo root, not `dist/` — package.json's
+        # `files` field (dist/**, README.md, LICENSE) controls what ships.
+        # Publishing from `dist/` used to require copying a *second*,
+        # separately-generated package.json in there (see the removed
+        # `postbuild` step) whose `main` field never matched the actually
+        # published layout.
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

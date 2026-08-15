@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { RFC4512Parser } from '../src'
 
 /**
@@ -121,7 +121,7 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
    * Verifies that the parser fails on invalid OID formats
    */
   it('should fail on invalid OID format', () => {
-    const invalidOidSchema = '( abc.def NAME \'test\' )'
+    const invalidOidSchema = "( abc.def NAME 'test' )"
     expect(() => parser.parseSchema(badLdifContent)).toThrow()
   })
 
@@ -131,7 +131,7 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
    */
   it('should fail when required fields are missing', () => {
     // Schema with OID but no NAME
-    const missingNameSchema = '( 2.5.4.3 DESC \'test description\' )'
+    const missingNameSchema = "( 2.5.4.3 DESC 'test description' )"
     expect(() => parser.parseSchema(badLdifContent)).toThrow()
   })
 
@@ -141,10 +141,10 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
    */
   it('should consistently fail on various malformed inputs', () => {
     const malformedInputs = [
-      '( 2.5.4.3 NAME \'unclosed quote )',
-      '( 2.5.4.3 NAME \'test\' INVALID_SYNTAX )',
-      '2.5.4.3 NAME \'test\'', // Missing parentheses
-      '( NAME \'test\' )', // Missing OID
+      "( 2.5.4.3 NAME 'unclosed quote )",
+      "( 2.5.4.3 NAME 'test' INVALID_SYNTAX )",
+      "2.5.4.3 NAME 'test'", // Missing parentheses
+      "( NAME 'test' )", // Missing OID
       '()', // Empty parentheses
     ]
 

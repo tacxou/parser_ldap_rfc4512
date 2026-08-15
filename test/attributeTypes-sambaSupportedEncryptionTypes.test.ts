@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { LDAPAttributeTypeInterface, RFC4512Parser } from '../src'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { type LDAPAttributeTypeInterface, RFC4512Parser } from '../src'
 
 /**
  * Test suite for RFC4512Parser - AttributeTypes LDIF parsing functionality
@@ -182,9 +182,9 @@ describe('RFC4512Parser - AttributeTypes LDIF (sambaSupportedEncryptionTypes)', 
   it('should handle various OpenLDAP prefix formats', () => {
     // Test different prefix formats
     const testCases = [
-      '{0}( 1.3.6.1.4.1.7165.2.1.80 NAME \'test0\' DESC \'Test with 0\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )',
-      '  {123}  ( 1.3.6.1.4.1.7165.2.1.80 NAME \'test123\' DESC \'Test with spaces\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )',
-      '{9999}( 1.3.6.1.4.1.7165.2.1.80 NAME \'test9999\' DESC \'Test with large number\' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )'
+      "{0}( 1.3.6.1.4.1.7165.2.1.80 NAME 'test0' DESC 'Test with 0' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )",
+      "  {123}  ( 1.3.6.1.4.1.7165.2.1.80 NAME 'test123' DESC 'Test with spaces' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )",
+      "{9999}( 1.3.6.1.4.1.7165.2.1.80 NAME 'test9999' DESC 'Test with large number' SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )",
     ]
 
     testCases.forEach((testCase, index) => {
@@ -201,10 +201,12 @@ describe('RFC4512Parser - AttributeTypes LDIF (sambaSupportedEncryptionTypes)', 
    */
   it('should work with both RFC 4512 pure format and OpenLDAP cn=config format', () => {
     // RFC 4512 pure format (without prefix)
-    const rfc4512Format = '( 1.3.6.1.4.1.7165.2.1.80 NAME \'sambaSupportedEncryptionTypes\' DESC \'Supported encryption types of a trust\' EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )'
+    const rfc4512Format =
+      "( 1.3.6.1.4.1.7165.2.1.80 NAME 'sambaSupportedEncryptionTypes' DESC 'Supported encryption types of a trust' EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )"
 
     // OpenLDAP cn=config format (with prefix)
-    const openLdapFormat = '{57}( 1.3.6.1.4.1.7165.2.1.80 NAME \'sambaSupportedEncryptionTypes\' DESC \'Supported encryption types of a trust\' EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )'
+    const openLdapFormat =
+      "{57}( 1.3.6.1.4.1.7165.2.1.80 NAME 'sambaSupportedEncryptionTypes' DESC 'Supported encryption types of a trust' EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )"
 
     // Both should parse to the same result
     const rfc4512Result = parser.parseSchema(rfc4512Format)

@@ -124,16 +124,21 @@ export const logger = {
    * //    Stack: Error: ...
    * //      at ...
    */
-  error: (message: string, errorOrData?: Error | { stack?: string } | any) => {
+  // The union used to end in `| any`, which collapsed the whole thing to
+  // `any` and silently dropped the two other members. `unknown` keeps the
+  // callers unconstrained without disabling type checking inside the body.
+  error: (message: string, errorOrData?: unknown) => {
     console.error(`❌ ${message}`)
     if (errorOrData) {
+      const stack = typeof errorOrData === 'object' && errorOrData !== null && 'stack' in errorOrData ? (errorOrData as { stack?: string }).stack : undefined
+
       if (errorOrData instanceof Error && errorOrData.message) {
         console.error(`   ${errorOrData.message}`)
-      } else if (errorOrData.stack) {
-        console.error(`   Stack: ${errorOrData.stack}`)
+      } else if (stack) {
+        console.error(`   Stack: ${stack}`)
       } else if (typeof errorOrData === 'object') {
         console.error('   Data:', errorOrData)
       }
     }
-  }
+  },
 }

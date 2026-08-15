@@ -1,8 +1,20 @@
-import { generate, type Parser, type ParserBuildOptions } from 'peggy'
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-import { RFC4512ParserError, RFC4512ErrorType, type RFC4512ParserOptions } from './interfaces'
+import type { Parser, ParserBuildOptions } from 'peggy'
+import * as generatedParser from './_grammars/rfc4512.generated'
+import { RFC4512ErrorType, RFC4512ParserError, type RFC4512ParserOptions } from './interfaces'
+import type { LDAPAttributeTypeInterface } from './interfaces/ldap-attribute-type.interface'
+import type { LDAPObjectClassInterface } from './interfaces/ldap-object-class.interface'
 import type { LDAPSchemaType } from './types'
+
+/**
+ * Shape of a Peggy `SyntaxError`, narrowed from the `unknown` a `catch` binds.
+ * Peggy does not export a type guard, and the parser only ever reads the
+ * position, so declaring just that keeps the cast honest.
+ */
+type PeggyLocatedError = {
+  location?: {
+    start: { line: number; column: number; offset: number }
+  }
+}
 
 /**
  * RFC 4512 LDAP Schema Parser
@@ -45,28 +57,32 @@ export class RFC4512Parser {
   private readonly _options: RFC4512ParserOptions
 
   /**
-   * Constructor - loads and compiles the PEG.js grammar
+   * Constructor - selects the precompiled RFC 4512 grammar
+   *
+   * The grammar is compiled ahead of time (see `scripts/build-grammar.mjs`)
+   * into `./_grammars/rfc4512.generated.js`, so building a parser instance
+   * is just an object literal — no disk access and no `peggy.generate()`
+   * call, both of which used to run on every parsed definition.
    *
    * @param options - Parser configuration options
-   * @param pegOptions - PEG.js specific build options
+   * @param pegOptions - Unused. Peggy build options only apply when the
+   * grammar is generated, which now happens ahead of time at build; this
+   * parameter is kept for backward compatibility and will be removed in a
+   * future major version.
    */
   public constructor(options?: RFC4512ParserOptions, pegOptions?: ParserBuildOptions) {
+    void pegOptions
     this._options = {
       relaxedMode: false,
-      ...options
+      ...options,
     }
 
     try {
-      const grammarPath = path.join(__dirname, './_grammars/rfc4512.pegjs')
-      const grammar = readFileSync(grammarPath, 'utf-8')
-      this._parser = generate(grammar, pegOptions)
+      this._parser = generatedParser as Parser
     } catch (error) {
-      throw new RFC4512ParserError(
-        `Error loading grammar: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        RFC4512ErrorType.GRAMMAR_LOAD_ERROR,
-        '',
-        { cause: error instanceof Error ? error : undefined }
-      )
+      throw new RFC4512ParserError(`Error loading grammar: ${error instanceof Error ? error.message : 'Unknown error'}`, RFC4512ErrorType.GRAMMAR_LOAD_ERROR, '', {
+        cause: error instanceof Error ? error : undefined,
+      })
     }
   }
 
@@ -131,11 +147,7 @@ export class RFC4512Parser {
       cleanInput = this.transformOpenLDAPOids(cleanInput)
 
       if (!cleanInput) {
-        throw new RFC4512ParserError(
-          'Schema definition cannot be empty',
-          RFC4512ErrorType.EMPTY_INPUT,
-          schemaDefinition
-        )
+        throw new RFC4512ParserError('Schema definition cannot be empty', RFC4512ErrorType.EMPTY_INPUT, schemaDefinition)
       }
 
       // Check for OpenLDAP OIDs in strict mode
@@ -145,7 +157,7 @@ export class RFC4512Parser {
           throw new RFC4512ParserError(
             'OpenLDAP configuration OIDs are not supported in strict RFC 4512 mode. Use relaxedMode: true to enable support.',
             RFC4512ErrorType.SYNTAX_ERROR,
-            schemaDefinition
+            schemaDefinition,
           )
         }
       }
@@ -155,39 +167,30 @@ export class RFC4512Parser {
 
       // Basic validation of parsed data
       if (!parsed.oid) {
-        throw new RFC4512ParserError(
-          'Missing OID in schema definition',
-          RFC4512ErrorType.MISSING_FIELD,
-          schemaDefinition,
-          { context: 'OID field is required for all LDAP schema definitions' }
-        )
+        throw new RFC4512ParserError('Missing OID in schema definition', RFC4512ErrorType.MISSING_FIELD, schemaDefinition, {
+          context: 'OID field is required for all LDAP schema definitions',
+        })
       }
 
       if (parsed.type !== 'ldapSyntax' && !parsed.name) {
-        throw new RFC4512ParserError(
-          'Missing NAME in schema definition',
-          RFC4512ErrorType.MISSING_FIELD,
-          schemaDefinition,
-          { context: 'NAME field is required for objectClass and attributeType definitions' }
-        )
+        throw new RFC4512ParserError('Missing NAME in schema definition', RFC4512ErrorType.MISSING_FIELD, schemaDefinition, {
+          context: 'NAME field is required for objectClass and attributeType definitions',
+        })
       }
 
       // Additional validation for objectClasses
       if (parsed.type === 'objectClass') {
-        const objectClass = parsed as any
+        // `parsed` is the caller-supplied generic `T`, so the `type` check
+        // above cannot narrow it the way it would narrow `LDAPSchemaType`.
+        const objectClass = parsed as unknown as LDAPObjectClassInterface
 
         // RFC 4512: ObjectClass must specify exactly one type
-        const hasValidType = objectClass.objectClassType === 'STRUCTURAL' ||
-          objectClass.objectClassType === 'AUXILIARY' ||
-          objectClass.objectClassType === 'ABSTRACT'
+        const hasValidType = objectClass.objectClassType === 'STRUCTURAL' || objectClass.objectClassType === 'AUXILIARY' || objectClass.objectClassType === 'ABSTRACT'
 
         if (!hasValidType) {
-          throw new RFC4512ParserError(
-            'ObjectClass must specify exactly one type: STRUCTURAL, AUXILIARY, or ABSTRACT',
-            RFC4512ErrorType.OBJECTCLASS_ERROR,
-            schemaDefinition,
-            { context: 'RFC 4512 Section 4.1.1 - ObjectClass type validation' }
-          )
+          throw new RFC4512ParserError('ObjectClass must specify exactly one type: STRUCTURAL, AUXILIARY, or ABSTRACT', RFC4512ErrorType.OBJECTCLASS_ERROR, schemaDefinition, {
+            context: 'RFC 4512 Section 4.1.1 - ObjectClass type validation',
+          })
         }
 
         // RFC 4512: Validate OID format (dotted decimal notation)
@@ -195,21 +198,16 @@ export class RFC4512Parser {
         const oidPattern = /^[0-9]+(\.[0-9]+)*$/
         const openldapOidPattern = /^OLcfg(?:Ov|Db|Gl)(?:At|Oc):[0-9]+(\.[0-9]+)*$/
 
-        const isValidOid = this._options.relaxedMode
-          ? (oidPattern.test(objectClass.oid) || openldapOidPattern.test(objectClass.oid))
-          : oidPattern.test(objectClass.oid)
+        const isValidOid = this._options.relaxedMode ? oidPattern.test(objectClass.oid) || openldapOidPattern.test(objectClass.oid) : oidPattern.test(objectClass.oid)
 
         if (!isValidOid) {
           const validFormats = this._options.relaxedMode
             ? 'dotted decimal notation (e.g., 2.5.6.6) or OpenLDAP configuration format (e.g., OLcfgOvAt:18.1)'
             : 'dotted decimal notation (e.g., 2.5.6.6)'
 
-          throw new RFC4512ParserError(
-            `Invalid OID format: ${objectClass.oid}. Must follow ${validFormats}`,
-            RFC4512ErrorType.INVALID_OID,
-            schemaDefinition,
-            { context: `RFC 4512 - OID validation (relaxedMode: ${this._options.relaxedMode})` }
-          )
+          throw new RFC4512ParserError(`Invalid OID format: ${objectClass.oid}. Must follow ${validFormats}`, RFC4512ErrorType.INVALID_OID, schemaDefinition, {
+            context: `RFC 4512 - OID validation (relaxedMode: ${this._options.relaxedMode})`,
+          })
         }
 
         // RFC 4512: Validate SUP field constraints
@@ -222,19 +220,16 @@ export class RFC4512Parser {
                 `Invalid SUP value: ${supValue}. SUP should reference a parent objectClass name, not a reserved keyword`,
                 RFC4512ErrorType.INVALID_FIELD,
                 schemaDefinition,
-                { context: 'RFC 4512 - SUP must reference a valid parent objectClass' }
+                { context: 'RFC 4512 - SUP must reference a valid parent objectClass' },
               )
             }
 
             // SUP should not be empty or contain invalid characters
             const supPattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/
             if (!supPattern.test(supValue)) {
-              throw new RFC4512ParserError(
-                `Invalid SUP format: ${supValue}. Must be a valid objectClass name`,
-                RFC4512ErrorType.INVALID_FIELD,
-                schemaDefinition,
-                { context: 'RFC 4512 - SUP must follow objectClass naming conventions' }
-              )
+              throw new RFC4512ParserError(`Invalid SUP format: ${supValue}. Must be a valid objectClass name`, RFC4512ErrorType.INVALID_FIELD, schemaDefinition, {
+                context: 'RFC 4512 - SUP must follow objectClass naming conventions',
+              })
             }
           }
         }
@@ -243,15 +238,12 @@ export class RFC4512Parser {
         if (objectClass.must && objectClass.may && !this._options.allowMustMayOverlap) {
           const mustSet = new Set(objectClass.must)
           const maySet = new Set(objectClass.may)
-          const overlap = [...mustSet].filter(attr => maySet.has(attr))
+          const overlap = [...mustSet].filter((attr) => maySet.has(attr))
 
           if (overlap.length > 0) {
-            throw new RFC4512ParserError(
-              `Attributes cannot appear in both MUST and MAY: ${overlap.join(', ')}`,
-              RFC4512ErrorType.VALIDATION_ERROR,
-              schemaDefinition,
-              { context: 'RFC 4512 Section 4.1.1 - MUST and MAY attributes must be mutually exclusive' }
-            )
+            throw new RFC4512ParserError(`Attributes cannot appear in both MUST and MAY: ${overlap.join(', ')}`, RFC4512ErrorType.VALIDATION_ERROR, schemaDefinition, {
+              context: 'RFC 4512 Section 4.1.1 - MUST and MAY attributes must be mutually exclusive',
+            })
           }
         }
 
@@ -264,7 +256,7 @@ export class RFC4512Parser {
                 `Invalid attribute name in ${listType}: ${attr}. Must follow RFC 4512 naming conventions`,
                 RFC4512ErrorType.INVALID_NAME,
                 schemaDefinition,
-                { context: `${listType} attribute names must start with a letter and contain only letters, numbers, hyphens, and underscores` }
+                { context: `${listType} attribute names must start with a letter and contain only letters, numbers, hyphens, and underscores` },
               )
             }
           }
@@ -279,9 +271,7 @@ export class RFC4512Parser {
         }
 
         // Generic validation for unknown/invalid fields
-        const validObjectClassFields = [
-          'type', 'oid', 'name', 'desc', 'sup', 'objectClassType', 'must', 'may', 'extensions'
-        ]
+        const validObjectClassFields = ['type', 'oid', 'name', 'desc', 'sup', 'objectClassType', 'must', 'may', 'extensions']
 
         for (const key of Object.keys(objectClass)) {
           if (!validObjectClassFields.includes(key)) {
@@ -289,7 +279,7 @@ export class RFC4512Parser {
               `Invalid field in objectClass definition: ${key}. Check RFC 4512 specification for valid fields`,
               RFC4512ErrorType.INVALID_FIELD,
               schemaDefinition,
-              { context: `Valid objectClass fields are: ${validObjectClassFields.join(', ')}` }
+              { context: `Valid objectClass fields are: ${validObjectClassFields.join(', ')}` },
             )
           }
         }
@@ -297,28 +287,23 @@ export class RFC4512Parser {
 
       // Additional validation for attributeTypes
       if (parsed.type === 'attributeType') {
-        const attributeType = parsed as any
+        const attributeType = parsed as unknown as LDAPAttributeTypeInterface
 
         // RFC 4512: Validate OID format
         // In relaxed mode, also allow OpenLDAP configuration OIDs
         const oidPattern = /^[0-9]+(\.[0-9]+)*$/
         const openldapOidPattern = /^OLcfg(?:Ov|Db|Gl)(?:At|Oc):[0-9]+(\.[0-9]+)*$/
 
-        const isValidOid = this._options.relaxedMode
-          ? (oidPattern.test(attributeType.oid) || openldapOidPattern.test(attributeType.oid))
-          : oidPattern.test(attributeType.oid)
+        const isValidOid = this._options.relaxedMode ? oidPattern.test(attributeType.oid) || openldapOidPattern.test(attributeType.oid) : oidPattern.test(attributeType.oid)
 
         if (!isValidOid) {
           const validFormats = this._options.relaxedMode
             ? 'dotted decimal notation (e.g., 2.5.4.3) or OpenLDAP configuration format (e.g., OLcfgOvAt:18.1)'
             : 'dotted decimal notation (e.g., 2.5.4.3)'
 
-          throw new RFC4512ParserError(
-            `Invalid OID format: ${attributeType.oid}. Must follow ${validFormats}`,
-            RFC4512ErrorType.INVALID_OID,
-            schemaDefinition,
-            { context: `RFC 4512 - OID validation (relaxedMode: ${this._options.relaxedMode})` }
-          )
+          throw new RFC4512ParserError(`Invalid OID format: ${attributeType.oid}. Must follow ${validFormats}`, RFC4512ErrorType.INVALID_OID, schemaDefinition, {
+            context: `RFC 4512 - OID validation (relaxedMode: ${this._options.relaxedMode})`,
+          })
         }
 
         // RFC 4512: Validate SUP field for attributeTypes
@@ -329,19 +314,16 @@ export class RFC4512Parser {
               `Invalid SUP value: ${attributeType.sup}. SUP should reference a parent attributeType name, not a reserved keyword`,
               RFC4512ErrorType.INVALID_FIELD,
               schemaDefinition,
-              { context: 'RFC 4512 - SUP must reference a valid parent attributeType' }
+              { context: 'RFC 4512 - SUP must reference a valid parent attributeType' },
             )
           }
         }
 
         // RFC 4512: If no SUP, SYNTAX is required
         if (!attributeType.sup && !attributeType.syntax) {
-          throw new RFC4512ParserError(
-            'AttributeType must have either SUP (superior type) or SYNTAX defined',
-            RFC4512ErrorType.ATTRIBUTETYPE_ERROR,
-            schemaDefinition,
-            { context: 'RFC 4512 Section 4.1.2 - AttributeType must inherit from superior or define syntax' }
-          )
+          throw new RFC4512ParserError('AttributeType must have either SUP (superior type) or SYNTAX defined', RFC4512ErrorType.ATTRIBUTETYPE_ERROR, schemaDefinition, {
+            context: 'RFC 4512 Section 4.1.2 - AttributeType must inherit from superior or define syntax',
+          })
         }
 
         // Validate SYNTAX field format in strict mode
@@ -354,15 +336,27 @@ export class RFC4512Parser {
               `Invalid SYNTAX OID format: ${syntaxOid}. In strict mode, SYNTAX must use standard numeric OID format (e.g., '1.3.6.1.4.1.1466.115.121.1.15'). Use relaxedMode: true to support OpenLDAP syntax names.`,
               RFC4512ErrorType.INVALID_FIELD,
               schemaDefinition,
-              { context: `RFC 4512 - SYNTAX validation (relaxedMode: ${this._options.relaxedMode})` }
+              { context: `RFC 4512 - SYNTAX validation (relaxedMode: ${this._options.relaxedMode})` },
             )
           }
         }
 
         // Generic validation for unknown/invalid fields
         const validAttributeTypeFields = [
-          'type', 'oid', 'name', 'desc', 'sup', 'equality', 'ordering', 'substr',
-          'syntax', 'singleValue', 'collective', 'noUserModification', 'usage', 'extensions'
+          'type',
+          'oid',
+          'name',
+          'desc',
+          'sup',
+          'equality',
+          'ordering',
+          'substr',
+          'syntax',
+          'singleValue',
+          'collective',
+          'noUserModification',
+          'usage',
+          'extensions',
         ]
 
         for (const key of Object.keys(attributeType)) {
@@ -371,14 +365,13 @@ export class RFC4512Parser {
               `Invalid field in attributeType definition: ${key}. Check RFC 4512 specification for valid fields`,
               RFC4512ErrorType.INVALID_FIELD,
               schemaDefinition,
-              { context: `Valid attributeType fields are: ${validAttributeTypeFields.join(', ')}` }
+              { context: `Valid attributeType fields are: ${validAttributeTypeFields.join(', ')}` },
             )
           }
         }
       }
 
       return parsed
-
     } catch (error) {
       // If it's already an RFC4512ParserError, re-throw it
       if (error instanceof RFC4512ParserError) {
@@ -386,19 +379,21 @@ export class RFC4512Parser {
       }
 
       // For PEG.js parsing errors, extract position information if available
-      const pegError = error as any
-      const position = pegError.location ? {
-        line: pegError.location.start.line,
-        column: pegError.location.start.column,
-        offset: pegError.location.start.offset
-      } : undefined
+      const pegError = error as PeggyLocatedError
+      const position = pegError.location
+        ? {
+            line: pegError.location.start.line,
+            column: pegError.location.start.column,
+            offset: pegError.location.start.offset,
+          }
+        : undefined
 
       // Create a new RFC4512ParserError for grammar/syntax errors
       throw RFC4512ParserError.fromError(
         error instanceof Error ? error : new Error(String(error)),
         pegError.location ? RFC4512ErrorType.SYNTAX_ERROR : RFC4512ErrorType.UNKNOWN_ERROR,
         schemaDefinition,
-        { position }
+        { position },
       )
     }
   }
@@ -411,7 +406,7 @@ export class RFC4512Parser {
    * @throws {RFC4512ParserError} When any parsing fails with detailed error information
    */
   public parseMultipleSchemas(schemaDefinitions: string[]): LDAPSchemaType[] {
-    return schemaDefinitions.map(schema => this.parseSchema(schema))
+    return schemaDefinitions.map((schema) => this.parseSchema(schema))
   }
 
   /**
@@ -437,10 +432,10 @@ export class RFC4512Parser {
    */
   public extractOID(schemaDefinition: string): string | null {
     try {
-      const result = this.parseSchema(schemaDefinition);
-      return result.oid;
+      const result = this.parseSchema(schemaDefinition)
+      return result.oid
     } catch {
-      return null;
+      return null
     }
   }
 
@@ -452,10 +447,10 @@ export class RFC4512Parser {
    */
   public extractName(schemaDefinition: string): string | null {
     try {
-      const result = this.parseSchema(schemaDefinition);
-      return result.type === 'ldapSyntax' ? null : result.name;
+      const result = this.parseSchema(schemaDefinition)
+      return result.type === 'ldapSyntax' ? null : result.name
     } catch {
-      return null;
+      return null
     }
   }
 

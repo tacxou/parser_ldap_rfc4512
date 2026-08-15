@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
-import { spawn } from 'node:child_process'
-import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { execSync, spawn } from 'node:child_process'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 /**
  * Test suite for RFC4512 Parser CLI
@@ -16,8 +16,18 @@ import { tmpdir } from 'node:os'
  * - Exit codes
  */
 describe('RFC4512 Parser CLI', () => {
-  const cliPath = join(__dirname, '../src/cli.ts')
+  // Exercise the built CLI, not `src/cli.ts`. Bun could execute TypeScript
+  // directly; Node only does so from 23.6, while `engines.node` allows 22 —
+  // so spawning the source would fail on a supported runtime. Testing
+  // `dist/cli.js` also covers the artifact that `bin` actually publishes.
+  const cliPath = join(__dirname, '../dist/cli.js')
   let tempFiles: string[] = []
+
+  beforeAll(() => {
+    if (!existsSync(cliPath)) {
+      execSync('yarn build', { cwd: join(__dirname, '..'), stdio: 'inherit' })
+    }
+  }, 60_000)
 
   beforeEach(async () => {
     tempFiles = []
@@ -25,7 +35,7 @@ describe('RFC4512 Parser CLI', () => {
 
   afterEach(() => {
     // Clean up temporary files
-    tempFiles.forEach(file => {
+    tempFiles.forEach((file) => {
       if (existsSync(file)) {
         unlinkSync(file)
       }
@@ -51,8 +61,8 @@ describe('RFC4512 Parser CLI', () => {
     exitCode: number
   }> {
     return new Promise((resolve) => {
-      const child = spawn('bun', [cliPath, ...args], {
-        stdio: 'pipe'
+      const child = spawn(process.execPath, [cliPath, ...args], {
+        stdio: 'pipe',
       })
 
       let stdout = ''
@@ -70,7 +80,7 @@ describe('RFC4512 Parser CLI', () => {
         resolve({
           stdout,
           stderr,
-          exitCode: code || 0
+          exitCode: code || 0,
         })
       })
     })
@@ -88,7 +98,7 @@ describe('RFC4512 Parser CLI', () => {
     expect(result.stdout).toContain('--output')
     expect(result.stdout).toContain('--format')
     expect(result.stdout).toContain('--verbose')
-  })  /**
+  }) /**
    * Test: Parse schema from command line argument
    */
   it('should parse schema from command line argument', async () => {
@@ -166,11 +176,11 @@ describe('RFC4512 Parser CLI', () => {
     expect(result.stdout).toContain('Reading from file:')
     expect(result.stdout).toContain('Parsing schema definition')
     expect(result.stdout).toContain('Schema definition:')
-  })  /**
+  }) /**
    * Test: Error handling for invalid schema
    */
   it('should handle invalid schema with proper error message', async () => {
-    const invalidSchema = "INVALID SCHEMA DEFINITION"
+    const invalidSchema = 'INVALID SCHEMA DEFINITION'
     const result = await runCli([invalidSchema])
 
     expect(result.exitCode).toBe(1)
@@ -214,7 +224,7 @@ describe('RFC4512 Parser CLI', () => {
     expect(jsonOutput.data.objectClassType).toBe('STRUCTURAL')
     expect(jsonOutput.data.must).toEqual(['sn', 'cn'])
     expect(jsonOutput.data.may).toEqual(['userPassword', 'telephoneNumber', 'seeAlso', 'description'])
-  })  /**
+  }) /**
    * Test: Parse attribute type with syntax
    */
   it('should parse attribute type with syntax definition', async () => {
@@ -230,7 +240,7 @@ describe('RFC4512 Parser CLI', () => {
     expect(jsonOutput.data.equality).toBe('octetStringMatch')
     expect(jsonOutput.data.syntax).toEqual({
       oid: '1.3.6.1.4.1.1466.115.121.1.40',
-      length: 128
+      length: 128,
     })
   })
 

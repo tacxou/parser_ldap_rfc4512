@@ -100,5 +100,5 @@ export enum RFC4512ErrorType {
    * don't fit into other specific categories. This typically indicates
    * an internal parser error or unforeseen edge case.
    */
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }

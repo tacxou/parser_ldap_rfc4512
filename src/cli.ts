@@ -20,13 +20,14 @@
  * ```
  */
 
+import { readFileSync, writeFileSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { readFileSync, writeFileSync } from 'node:fs'
 import { parseSchema } from './functions'
-import type { LDAPSchemaType } from './types'
 import { RFC4512ParserError } from './interfaces'
 import { logger } from './logger'
+import type { LDAPSchemaType } from './types'
 
 /**
  * Interface defining the available CLI options
@@ -150,43 +151,38 @@ async function main() {
   const argv = await yargs(hideBin(process.argv))
     .scriptName('rfc4512-parser')
     .usage('$0 [options] [schema-definition]')
-    .command(
-      '$0 [schema]',
-      'Parse an LDAP RFC 4512 schema definition',
-      (yargs) => {
-        return yargs.positional('schema', {
-          describe: 'Schema definition to parse (can also be provided via --input)',
-          type: 'string'
-        })
-      }
-    )
+    .command('$0 [schema]', 'Parse an LDAP RFC 4512 schema definition', (yargs) => {
+      return yargs.positional('schema', {
+        describe: 'Schema definition to parse (can also be provided via --input)',
+        type: 'string',
+      })
+    })
     .option('input', {
       alias: 'i',
       describe: 'Input file containing schema definition',
-      type: 'string'
+      type: 'string',
     })
     .option('output', {
       alias: 'o',
       describe: 'Output file for results',
-      type: 'string'
+      type: 'string',
     })
     .option('format', {
       alias: 'f',
       describe: 'Output format',
       choices: ['json', 'pretty'] as const,
-      default: 'pretty' as const
+      default: 'pretty' as const,
     })
     .option('verbose', {
       alias: 'v',
       describe: 'Verbose output',
       type: 'boolean',
-      default: false
+      default: false,
     })
     .example('$0 "( 2.5.6.6 NAME \'person\' SUP top STRUCTURAL )"', 'Parse a schema definition from command line')
     .example('$0 --input schema.ldif --format json', 'Parse from file and output as JSON')
     .example('$0 --input schema.ldif --output result.json', 'Parse from file and save to output file')
-    .help()
-    .argv
+    .help().argv
 
   const options = argv as CliOptions & { schema?: string }
 
@@ -250,7 +246,6 @@ async function main() {
 
     // Exit code: 0 if success, 1 if parsing error
     process.exit(result ? 0 : 1)
-
   } catch (error) {
     // Handle unexpected errors
     logger.error('Unexpected error', error instanceof Error ? error : new Error('Unknown error'))
@@ -276,7 +271,14 @@ process.on('uncaughtException', (error) => {
 })
 
 // Main entry point: execute CLI only if this file is called directly
-// (not when imported as a module)
-if (require.main === module) {
+// (not when imported as a module).
+//
+// This used to read `require.main === module`, a CommonJS idiom. The package
+// is `"type": "module"` and `bin` points at the ESM build, where `module` is
+// an undeclared free variable — so `dist/cli.js` threw "module is not defined
+// in ES module scope" on load for every installed user. The bug stayed hidden
+// because the CLI suite spawned `src/cli.ts` through Bun instead of the built
+// artifact; it now spawns `dist/cli.js`.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main()
 }

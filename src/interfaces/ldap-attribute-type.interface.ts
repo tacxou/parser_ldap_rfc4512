@@ -1,10 +1,4 @@
-import type {
-  LDAPAttributeUsageType,
-  LDAPEqualityMatchingRuleType,
-  LDAPOrderingMatchingRuleType,
-  LDAPSubstringMatchingRuleType,
-  LDAPSyntaxOIDType,
-} from '../types'
+import type { LDAPAttributeUsageType, LDAPEqualityMatchingRuleType, LDAPOrderingMatchingRuleType, LDAPSubstringMatchingRuleType, LDAPSyntaxOIDType } from '../types'
 
 /**
  * LDAP Attribute Type Definition Interface (RFC 4512)

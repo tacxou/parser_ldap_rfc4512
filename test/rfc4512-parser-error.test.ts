@@ -1,5 +1,5 @@
-import { describe, test, beforeEach, expect } from 'bun:test'
-import { RFC4512Parser, RFC4512ParserError, RFC4512ErrorType } from '../src'
+import { beforeEach, describe, expect, test } from 'vitest'
+import { RFC4512ErrorType, RFC4512Parser, RFC4512ParserError } from '../src'
 
 /**
  * Test suite for RFC4512ParserError - Error Handling and Custom Exception Testing
@@ -186,12 +186,7 @@ describe('RFC4512ParserError', () => {
       const originalError = new Error('Original error message')
       const schema = '( test schema )'
 
-      const rfc4512Error = RFC4512ParserError.fromError(
-        originalError,
-        RFC4512ErrorType.SYNTAX_ERROR,
-        schema,
-        { context: 'Test context' }
-      )
+      const rfc4512Error = RFC4512ParserError.fromError(originalError, RFC4512ErrorType.SYNTAX_ERROR, schema, { context: 'Test context' })
 
       expect(rfc4512Error).toBeInstanceOf(RFC4512ParserError)
       expect(rfc4512Error.errorType).toBe(RFC4512ErrorType.SYNTAX_ERROR)

@@ -10,7 +10,7 @@ Ce projet inclut maintenant une interface en ligne de commande (CLI) pour parser
 # Depuis le répertoire du projet
 npm link
 # ou
-bun link
+yarn link
 
 # Maintenant vous pouvez utiliser la commande rfc4512-parser partout
 rfc4512-parser --help
@@ -20,7 +20,7 @@ rfc4512-parser --help
 
 ```bash
 # Build du projet
-bun run build
+yarn build
 
 # Utilisation directe
 node dist/cli.js --help

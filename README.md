@@ -41,7 +41,7 @@ This project provides a comprehensive parser for LDAP (Lightweight Directory Acc
 ### 🧪 Production Ready
 - **Comprehensive Testing**: ~100% test coverage with real-world LDAP schemas
 - **CI/CD Pipeline**: Automated testing with GitHub Actions
-- **Performance Optimized**: Built with Bun for optimal performance
+- **Zero Runtime Dependencies**: The grammar is precompiled and the CLI is bundled
 - **Well Documented**: Complete documentation with practical examples
 
 ## 🚀 Quick Start
@@ -52,8 +52,8 @@ This project provides a comprehensive parser for LDAP (Lightweight Directory Acc
 # Install as a library
 npm install @tacxou/parser_ldap_rfc4512
 
-# Or with Bun
-bun add @tacxou/parser_ldap_rfc4512
+# Or with Yarn
+yarn add @tacxou/parser_ldap_rfc4512
 
 # Install globally for CLI usage
 npm install -g @tacxou/parser_ldap_rfc4512
@@ -284,9 +284,9 @@ rfc4512-parser --input openldap-export.ldif --format json
 - **Runtime Validation**: Schema validation beyond syntax checking
 
 ### Build System
-- **Bun Runtime**: Fast JavaScript runtime for optimal performance
-- **Tree Shaking**: Optimized builds with unused code elimination
-- **Dual Output**: Both ESM and CommonJS compatible builds
+- **tsup**: Bundles `src/index.ts` and `src/cli.ts`, targeting Node 22
+- **Precompiled Grammar**: `scripts/build-grammar.mjs` generates the Peggy parser at build time, never at runtime
+- **Dual Output**: Both ESM and CommonJS compatible builds, with `.d.ts` per format
 - **CLI Bundling**: Self-contained CLI executable
 
 ## 🧪 Testing & Quality
@@ -305,7 +305,7 @@ rfc4512-parser --input openldap-export.ldif --format json
 ### Quality Metrics
 - **Code Coverage**: ~100% test coverage on core components
 - **CI/CD**: Automated testing on multiple Node.js versions
-- **Code Quality**: ESLint and Prettier for consistent code style
+- **Code Quality**: Biome for linting and formatting, `tsc --noEmit` for types
 - **Performance**: Benchmarked against large schema files
 
 ## 🤝 Contributing
@@ -325,16 +325,23 @@ git clone https://github.com/tacxou/parser_ldap_rfc4512.git
 cd parser_ldap_rfc4512
 
 # Install dependencies
-bun install
+yarn install
 
 # Run tests
-bun test
+yarn test
 
 # Build the project
-bun run build
+yarn build
 
 # Test CLI locally
-bun run test:cli
+yarn test:cli
+
+# Lint and format
+yarn lint
+yarn lint:fix
+
+# Check types
+yarn typecheck
 ```
 
 ## 📄 License

@@ -1,4 +1,4 @@
-import { RFC4512ErrorType } from './rfc4512-error-type.enum'
+import type { RFC4512ErrorType } from './rfc4512-error-type.enum'
 import type { RFC4512ParserErrorInterface } from './rfc4512-parser-error.interface'
 
 /**
@@ -104,7 +104,7 @@ export class RFC4512ParserError extends Error {
       position?: { line: number; column: number; offset: number }
       context?: string
       cause?: Error
-    }
+    },
   ) {
     super(message)
     this.name = 'RFC4512ParserError'
@@ -160,9 +160,7 @@ export class RFC4512ParserError extends Error {
     }
 
     if (this.schemaDefinition) {
-      const preview = this.schemaDefinition.length > 100
-        ? this.schemaDefinition.substring(0, 100) + '...'
-        : this.schemaDefinition
+      const preview = this.schemaDefinition.length > 100 ? this.schemaDefinition.substring(0, 100) + '...' : this.schemaDefinition
       message += `\nSchema: ${preview}`
     }
 
@@ -210,11 +208,13 @@ export class RFC4512ParserError extends Error {
       position: this.position,
       context: this.context,
       stack: this.stack,
-      cause: this.cause ? {
-        name: this.cause.name,
-        message: this.cause.message,
-        stack: this.cause.stack
-      } : undefined
+      cause: this.cause
+        ? {
+            name: this.cause.name,
+            message: this.cause.message,
+            stack: this.cause.stack,
+          }
+        : undefined,
     }
   }
 
@@ -260,16 +260,11 @@ export class RFC4512ParserError extends Error {
     options?: {
       position?: { line: number; column: number; offset: number }
       context?: string
-    }
+    },
   ): RFC4512ParserError {
-    return new RFC4512ParserError(
-      error.message,
-      errorType,
-      schemaDefinition,
-      {
-        ...options,
-        cause: error
-      }
-    )
+    return new RFC4512ParserError(error.message, errorType, schemaDefinition, {
+      ...options,
+      cause: error,
+    })
   }
 }

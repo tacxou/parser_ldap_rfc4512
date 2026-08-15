@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'bun:test'
-import { RFC4512Parser, LDAPObjectClassInterface } from '../src'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { type LDAPObjectClassInterface, RFC4512Parser } from '../src'
 
 /**
  * Test suite for RFC4512Parser - ObjectClass ipProtocol LDIF parsing functionality
@@ -23,163 +23,163 @@ import { join } from 'node:path'
  * - Schema validation
  */
 describe('RFC4512Parser - ObjectClass ipProtocol LDIF Parsing', () => {
-    let parser: RFC4512Parser
-    let ldifContent: string
+  let parser: RFC4512Parser
+  let ldifContent: string
 
-    /**
-     * Set up test environment before each test
-     */
-    beforeEach(() => {
-        parser = new RFC4512Parser({ allowMustMayOverlap: true })
-        const ldifPath = join(__dirname, './samples/olcObjectClasses/ipProtocol.ldif')
-        ldifContent = readFileSync(ldifPath, 'utf-8').trim()
-    })
+  /**
+   * Set up test environment before each test
+   */
+  beforeEach(() => {
+    parser = new RFC4512Parser({ allowMustMayOverlap: true })
+    const ldifPath = join(__dirname, './samples/olcObjectClasses/ipProtocol.ldif')
+    ldifContent = readFileSync(ldifPath, 'utf-8').trim()
+  })
 
-    /**
-     * Test: Parse schema successfully
-     */
-    it('should successfully parse ipProtocol objectClass schema', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Parse schema successfully
+   */
+  it('should successfully parse ipProtocol objectClass schema', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result).toBeDefined()
-        expect(result.type).toBe('objectClass')
-    })
+    expect(result).toBeDefined()
+    expect(result.type).toBe('objectClass')
+  })
 
-    /**
-     * Test: Extract OID correctly
-     */
-    it('should extract the correct OID', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract OID correctly
+   */
+  it('should extract the correct OID', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.oid).toBe('1.3.6.1.1.1.2.4')
-    })
+    expect(result.oid).toBe('1.3.6.1.1.1.2.4')
+  })
 
-    /**
-     * Test: Extract name correctly
-     */
-    it('should extract the correct name', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract name correctly
+   */
+  it('should extract the correct name', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.name).toBe('ipProtocol')
-    })
+    expect(result.name).toBe('ipProtocol')
+  })
 
-    /**
-     * Test: Extract description correctly
-     */
-    it('should extract the correct description', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract description correctly
+   */
+  it('should extract the correct description', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.desc).toBe('Abstraction of an IP protocol')
-    })
+    expect(result.desc).toBe('Abstraction of an IP protocol')
+  })
 
-    /**
-     * Test: Extract superior class correctly
-     */
-    it('should extract the correct superior class', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract superior class correctly
+   */
+  it('should extract the correct superior class', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.sup).toEqual(['top'])
-    })
+    expect(result.sup).toEqual(['top'])
+  })
 
-    /**
-     * Test: Detect objectClass type as STRUCTURAL
-     */
-    it('should detect objectClass type as STRUCTURAL', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Detect objectClass type as STRUCTURAL
+   */
+  it('should detect objectClass type as STRUCTURAL', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.objectClassType).toBe('STRUCTURAL')
-    })
+    expect(result.objectClassType).toBe('STRUCTURAL')
+  })
 
-    /**
-     * Test: Extract required attributes (MUST)
-     */
-    it('should extract the correct required attributes', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract required attributes (MUST)
+   */
+  it('should extract the correct required attributes', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.must).toBeDefined()
-        expect(Array.isArray(result.must)).toBe(true)
-        expect(result.must).toContain('cn')
-        expect(result.must).toContain('ipProtocolNumber')
-        expect(result.must).toContain('description')
-        expect(result.must?.length).toBe(3)
-    })
+    expect(result.must).toBeDefined()
+    expect(Array.isArray(result.must)).toBe(true)
+    expect(result.must).toContain('cn')
+    expect(result.must).toContain('ipProtocolNumber')
+    expect(result.must).toContain('description')
+    expect(result.must?.length).toBe(3)
+  })
 
-    /**
-     * Test: Extract optional attributes (MAY)
-     */
-    it('should extract the correct optional attributes', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Extract optional attributes (MAY)
+   */
+  it('should extract the correct optional attributes', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.may).toBeDefined()
-        expect(Array.isArray(result.may)).toBe(true)
-        expect(result.may).toContain('description')
-        expect(result.may?.length).toBe(1)
-    })
+    expect(result.may).toBeDefined()
+    expect(Array.isArray(result.may)).toBe(true)
+    expect(result.may).toContain('description')
+    expect(result.may?.length).toBe(1)
+  })
 
-    /**
-     * Test: Validate schema
-     */
-    it('should validate the schema as correct', () => {
-        const isValid = parser.isValidSchema(ldifContent)
-        expect(isValid).toBe(true)
-    })
+  /**
+   * Test: Validate schema
+   */
+  it('should validate the schema as correct', () => {
+    const isValid = parser.isValidSchema(ldifContent)
+    expect(isValid).toBe(true)
+  })
 
-    /**
-     * Test: Parse without errors
-     */
-    it('should parse without throwing errors', () => {
-        expect(() => {
-            parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
-        }).not.toThrow()
-    })
+  /**
+   * Test: Parse without errors
+   */
+  it('should parse without throwing errors', () => {
+    expect(() => {
+      parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+    }).not.toThrow()
+  })
 
-    /**
-     * Test: Schema contains required elements
-     */
-    it('should contain all required schema elements', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: Schema contains required elements
+   */
+  it('should contain all required schema elements', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        // OID is required
-        expect(result.oid).toBeDefined()
-        expect(result.oid).toBeTruthy()
+    // OID is required
+    expect(result.oid).toBeDefined()
+    expect(result.oid).toBeTruthy()
 
-        // Name is required
-        expect(result.name).toBeDefined()
-        expect(result.name).toBeTruthy()
+    // Name is required
+    expect(result.name).toBeDefined()
+    expect(result.name).toBeTruthy()
 
-        // Type should be objectClass
-        expect(result.type).toBe('objectClass')
-    })
+    // Type should be objectClass
+    expect(result.type).toBe('objectClass')
+  })
 
-    /**
-     * Test: ObjectClass classification
-     */
-    it('should correctly classify as STRUCTURAL objectClass', () => {
-        const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+  /**
+   * Test: ObjectClass classification
+   */
+  it('should correctly classify as STRUCTURAL objectClass', () => {
+    const result = parser.parseSchema<LDAPObjectClassInterface>(ldifContent)
 
-        expect(result.objectClassType).toBe('STRUCTURAL')
-        expect(result.sup).toEqual(['top'])
-    })
+    expect(result.objectClassType).toBe('STRUCTURAL')
+    expect(result.sup).toEqual(['top'])
+  })
 
-    /**
-     * Test: Parser with allowMustMayOverlap disabled should throw error
-     */
-    it('should throw error when allowMustMayOverlap is disabled', () => {
-        const strictParser = new RFC4512Parser({ allowMustMayOverlap: false })
+  /**
+   * Test: Parser with allowMustMayOverlap disabled should throw error
+   */
+  it('should throw error when allowMustMayOverlap is disabled', () => {
+    const strictParser = new RFC4512Parser({ allowMustMayOverlap: false })
 
-        expect(() => {
-            strictParser.parseSchema<LDAPObjectClassInterface>(ldifContent)
-        }).toThrow('Attributes cannot appear in both MUST and MAY: description')
-    })
+    expect(() => {
+      strictParser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+    }).toThrow('Attributes cannot appear in both MUST and MAY: description')
+  })
 
-    /**
-     * Test: Parser with allowMustMayOverlap enabled should not throw error
-     */
-    it('should not throw error when allowMustMayOverlap is enabled', () => {
-        const permissiveParser = new RFC4512Parser({ allowMustMayOverlap: true })
+  /**
+   * Test: Parser with allowMustMayOverlap enabled should not throw error
+   */
+  it('should not throw error when allowMustMayOverlap is enabled', () => {
+    const permissiveParser = new RFC4512Parser({ allowMustMayOverlap: true })
 
-        expect(() => {
-            permissiveParser.parseSchema<LDAPObjectClassInterface>(ldifContent)
-        }).not.toThrow()
-    })
+    expect(() => {
+      permissiveParser.parseSchema<LDAPObjectClassInterface>(ldifContent)
+    }).not.toThrow()
+  })
 })

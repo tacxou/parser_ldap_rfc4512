@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'bun:test'
-import { parseSchema, RFC4512ParserError } from '../src'
 import type { ParserBuildOptions } from 'peggy'
+import { describe, expect, it } from 'vitest'
+import { parseSchema, RFC4512ParserError } from '../src'
 
 /**
  * Test suite for parseSchema utility function
@@ -72,7 +72,7 @@ describe('parseSchema utility function', () => {
       // Test with cache option (lines 13-14 coverage)
       const options: ParserBuildOptions = {
         cache: true,
-        trace: false
+        trace: false,
       }
 
       const result = parseSchema(schema, undefined, options)
@@ -93,7 +93,7 @@ describe('parseSchema utility function', () => {
       `
 
       const options: ParserBuildOptions = {
-        trace: true
+        trace: true,
       }
 
       const result = parseSchema(schema, undefined, options)
@@ -116,7 +116,7 @@ describe('parseSchema utility function', () => {
 
       const options: ParserBuildOptions = {
         optimize: 'speed',
-        cache: false
+        cache: false,
       }
 
       const result = parseSchema(schema, undefined, options)
@@ -164,7 +164,7 @@ describe('parseSchema utility function', () => {
 
     it('should propagate RFC4512ParserError with options', () => {
       const options: ParserBuildOptions = {
-        trace: true
+        trace: true,
       }
 
       expect(() => {
@@ -260,7 +260,7 @@ describe('parseSchema utility function', () => {
       const options: ParserBuildOptions = {
         cache: true,
         trace: false,
-        optimize: 'size'
+        optimize: 'size',
       }
 
       const result = parseSchema(schema, undefined, options)
@@ -269,6 +269,47 @@ describe('parseSchema utility function', () => {
       expect(result.type).toBe('attributeType')
       expect(result.oid).toBe('2.5.4.35')
       expect(result.name).toBe('userPassword')
+    })
+  })
+
+  describe('Parser instance memoization', () => {
+    // Regression guard: parseSchema() used to build a brand new
+    // RFC4512Parser — and, before the grammar was precompiled, recompile
+    // the full Peggy grammar — on every single call. A real subschema can
+    // hold 1500-2500 definitions, so an un-memoized/un-precompiled
+    // implementation turns one `schemas()` request into thousands of
+    // grammar compilations. 2 seconds is generous headroom; on this
+    // machine it runs in well under 100ms.
+    it('parses 2000 definitions with the same options in under 2 seconds', () => {
+      const schema = `
+        ( 2.5.6.6
+          NAME 'person'
+          DESC 'RFC2256: a person'
+          SUP top
+          STRUCTURAL
+          MUST ( sn $ cn )
+          MAY ( userPassword $ telephoneNumber $ description )
+        )
+      `
+
+      const start = performance.now()
+      for (let i = 0; i < 2000; i++) {
+        parseSchema(schema, { relaxedMode: true, allowMustMayOverlap: true })
+      }
+      const elapsed = performance.now() - start
+
+      expect(elapsed).toBeLessThan(2000)
+    })
+
+    it('still returns fresh output per call despite reusing the parser instance', () => {
+      const cnSchema = `( 2.5.4.3 NAME 'cn' DESC 'Common Name' SUP name )`
+      const snSchema = `( 2.5.4.4 NAME 'sn' DESC 'Surname' SUP name )`
+
+      const cn = parseSchema(cnSchema)
+      const sn = parseSchema(snSchema)
+
+      expect(cn.oid).toBe('2.5.4.3')
+      expect(sn.oid).toBe('2.5.4.4')
     })
   })
 })
