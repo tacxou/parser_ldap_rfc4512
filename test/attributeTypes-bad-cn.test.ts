@@ -113,7 +113,7 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
    */
   it('should fail on incomplete schema definitions', () => {
     const incompleteSchema = '( 2.5.4.3 NAME'
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(incompleteSchema)).toThrow()
   })
 
   /**
@@ -122,17 +122,16 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
    */
   it('should fail on invalid OID format', () => {
     const invalidOidSchema = "( abc.def NAME 'test' )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(invalidOidSchema)).toThrow()
   })
 
   /**
    * Test: Missing required fields
    * Verifies that the parser fails when required fields are missing
    */
-  it('should fail when required fields are missing', () => {
-    // Schema with OID but no NAME
-    const missingNameSchema = "( 2.5.4.3 DESC 'test description' )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+  it('should fail when the required OID is missing', () => {
+    const missingOidSchema = "( NAME 'test' SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )"
+    expect(() => parser.parseSchema(missingOidSchema)).toThrow()
   })
 
   /**
@@ -148,8 +147,8 @@ describe('RFC4512Parser - Malformed LDIF Error Handling', () => {
       '()', // Empty parentheses
     ]
 
-    malformedInputs.forEach((input, index) => {
-      expect(() => parser.parseSchema(badLdifContent)).toThrow()
-    })
+    for (const input of malformedInputs) {
+      expect(() => parser.parseSchema(input)).toThrow()
+    }
   })
 })

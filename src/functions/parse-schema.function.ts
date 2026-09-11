@@ -1,7 +1,6 @@
-import type { ParserBuildOptions } from 'peggy'
 import type { RFC4512ParserOptions } from '../interfaces'
 import RFC4512Parser from '../rfc4512.parser'
-import type { LDAPSchemaType } from '../types'
+import type { LDAPSchemaType, ParserBuildOptions } from '../types'
 
 /**
  * `RFC4512Parser` instances are stateless past construction (the grammar is

@@ -330,6 +330,9 @@ yarn install
 # Run tests
 yarn test
 
+# Run tests with coverage
+yarn test:coverage
+
 # Build the project
 yarn build
 
@@ -342,6 +345,23 @@ yarn lint:fix
 
 # Check types
 yarn typecheck
+
+# Build and audit the npm tarball
+yarn package
+
+# Build the static documentation and LLM context files
+yarn docs:build
+```
+
+The same quality commands are exposed through the Makefile:
+
+```bash
+make lint
+make typecheck
+make test-coverage
+make build
+make package
+make docs-build
 ```
 
 ## 📄 License

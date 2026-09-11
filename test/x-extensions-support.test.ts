@@ -108,8 +108,9 @@ describe('RFC4512Parser - X-* Extensions Support (mailSieveRuleSource)', () => {
 
     expect(result.extensions).toBeDefined()
     expect(typeof result.extensions).toBe('object')
-    expect(Object.keys(result.extensions!)).toHaveLength(1)
-    expect(Object.keys(result.extensions!)[0]).toBe('X-ORIGIN')
+    const extensionKeys = Object.keys(result.extensions ?? {})
+    expect(extensionKeys).toHaveLength(1)
+    expect(extensionKeys[0]).toBe('X-ORIGIN')
   })
 
   /**
@@ -194,7 +195,7 @@ describe('RFC4512Parser - X-* Extensions Support (mailSieveRuleSource)', () => {
 
     // Should have extensions because X-ORIGIN is present
     expect(result.extensions).toBeDefined()
-    expect(Object.keys(result.extensions!).length).toBeGreaterThan(0)
+    expect(Object.keys(result.extensions ?? {}).length).toBeGreaterThan(0)
   })
 
   /**
@@ -206,7 +207,7 @@ describe('RFC4512Parser - X-* Extensions Support (mailSieveRuleSource)', () => {
 
     expect(result.extensions).toBeDefined()
 
-    const extensionKeys = Object.keys(result.extensions!)
+    const extensionKeys = Object.keys(result.extensions ?? {})
     for (const key of extensionKeys) {
       expect(key).toMatch(/^X-[A-Z0-9-]+$/)
     }

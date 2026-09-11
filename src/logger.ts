@@ -29,6 +29,7 @@ export interface LoggerConfig {
  * @returns {typeof logger} The logger instance
  */
 export function createLogger(config: LoggerConfig = {}) {
+  void config
   return logger
 }
 

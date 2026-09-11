@@ -99,7 +99,7 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail on malformed objectClass MUST/MAY syntax', () => {
     const malformedMustMay = "( 2.5.6.6 NAME 'test' SUP top STRUCTURAL MUST ( cn $ INVALID )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(malformedMustMay)).toThrow()
   })
 
   /**
@@ -108,7 +108,7 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail when objectClass type is missing', () => {
     const missingType = "( 2.5.6.6 NAME 'test' SUP top MUST cn )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(missingType)).toThrow()
   })
 
   /**
@@ -117,7 +117,7 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail on invalid SUP reference syntax', () => {
     const invalidSup = "( 2.5.6.6 NAME 'test' SUP STRUCTURAL MUST cn )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(invalidSup)).toThrow()
   })
 
   /**
@@ -126,7 +126,7 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail on incomplete MUST/MAY attribute lists', () => {
     const incompleteList = "( 2.5.6.6 NAME 'test' SUP top STRUCTURAL MUST ( cn $"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(incompleteList)).toThrow()
   })
 
   /**
@@ -141,9 +141,9 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
       '()', // Empty parentheses
     ]
 
-    malformedInputs.forEach((input, index) => {
-      expect(() => parser.parseSchema(badLdifContent)).toThrow()
-    })
+    for (const input of malformedInputs) {
+      expect(() => parser.parseSchema(input)).toThrow()
+    }
   })
 
   /**
@@ -152,7 +152,7 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail on objectClass with conflicting types', () => {
     const conflictingTypes = "( 2.5.6.6 NAME 'test' SUP top STRUCTURAL AUXILIARY )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(conflictingTypes)).toThrow()
   })
 
   /**
@@ -161,6 +161,6 @@ describe('RFC4512Parser - Malformed ObjectClass LDIF Error Handling', () => {
    */
   it('should fail on empty or malformed MUST/MAY lists', () => {
     const emptyMust = "( 2.5.6.6 NAME 'test' SUP top STRUCTURAL MUST () )"
-    expect(() => parser.parseSchema(badLdifContent)).toThrow()
+    expect(() => parser.parseSchema(emptyMust)).toThrow()
   })
 })

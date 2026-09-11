@@ -26,6 +26,11 @@ objectClassDefinition
       may: null
     };
 
+    const kinds = elements.filter(element => element.type === 'kind');
+    if (kinds.length > 1) {
+      error('ObjectClass must specify at most one type: STRUCTURAL, AUXILIARY, or ABSTRACT');
+    }
+
     // Process elements in any order
     elements.forEach(element => {
       if (element.type === 'desc') result.desc = element.value;

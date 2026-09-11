@@ -1,9 +1,12 @@
-import type { Parser, ParserBuildOptions } from 'peggy'
 import * as generatedParser from './_grammars/rfc4512.generated'
 import { RFC4512ErrorType, RFC4512ParserError, type RFC4512ParserOptions } from './interfaces'
 import type { LDAPAttributeTypeInterface } from './interfaces/ldap-attribute-type.interface'
 import type { LDAPObjectClassInterface } from './interfaces/ldap-object-class.interface'
-import type { LDAPSchemaType } from './types'
+import type { LDAPSchemaType, ParserBuildOptions } from './types'
+
+type GeneratedParser = {
+  parse(input: string): unknown
+}
 
 /**
  * Shape of a Peggy `SyntaxError`, narrowed from the `unknown` a `catch` binds.
@@ -53,7 +56,7 @@ type PeggyLocatedError = {
  * ```
  */
 export class RFC4512Parser {
-  private readonly _parser: Parser
+  private readonly _parser: GeneratedParser
   private readonly _options: RFC4512ParserOptions
 
   /**
@@ -78,7 +81,7 @@ export class RFC4512Parser {
     }
 
     try {
-      this._parser = generatedParser as Parser
+      this._parser = generatedParser as GeneratedParser
     } catch (error) {
       throw new RFC4512ParserError(`Error loading grammar: ${error instanceof Error ? error.message : 'Unknown error'}`, RFC4512ErrorType.GRAMMAR_LOAD_ERROR, '', {
         cause: error instanceof Error ? error : undefined,
@@ -121,14 +124,8 @@ export class RFC4512Parser {
       return schemaDefinition
     }
 
-    // Pattern to match OpenLDAP configuration OIDs
-    // Matches: OLcfgOvAt:18.1, OLcfgDbAt:2.3, etc.
-    const openldapOidPattern = /\b(OLcfg(?:Ov|Db|Gl)(?:At|Oc)):([\d.]+)\b/g
-
-    return schemaDefinition.replace(openldapOidPattern, (match, prefix, suffix) => {
-      // In relaxed mode, we keep the OpenLDAP format as-is since our grammar now supports it
-      return match
-    })
+    // The grammar accepts OpenLDAP identifiers directly in relaxed mode.
+    return schemaDefinition
   }
 
   /**
@@ -163,7 +160,7 @@ export class RFC4512Parser {
       }
 
       // Parse with PEG.js grammar
-      const parsed: T = this._parser.parse(cleanInput)
+      const parsed = this._parser.parse(cleanInput) as T
 
       // Basic validation of parsed data
       if (!parsed.oid) {

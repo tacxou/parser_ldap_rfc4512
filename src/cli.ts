@@ -65,11 +65,11 @@ function formatResult(result: LDAPSchemaType | null, error: string | null, forma
   }
 
   // Pretty format: formatted display for human readability
-  if (error) {
-    return `❌ Parse Error: ${error}`
+  if (error || result === null) {
+    return `❌ Parse Error: ${error ?? 'Unknown parse error'}`
   }
 
-  const data = result!
+  const data = result
   let output = `✅ Parse Success\n\n`
 
   // Basic schema information
@@ -258,7 +258,7 @@ async function main() {
 
 // Handle unhandled promise rejections
 // This allows capturing asynchronous errors that haven't been handled
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
   logger.error('Unhandled promise rejection', reason instanceof Error ? reason : new Error(String(reason)))
   process.exit(1)
 })

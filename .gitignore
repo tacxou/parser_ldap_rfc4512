@@ -1,6 +1,8 @@
 dist/
 node_modules/
 coverage/
+.artifacts/
+*.tgz
 
 # Precompiled from src/_grammars/rfc4512.pegjs by scripts/build-grammar.mjs
 # (run automatically via `build:grammar` / `prebuild` / `pretest`).

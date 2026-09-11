@@ -3,6 +3,10 @@
   "version": "1.0.3",
   "description": "A TypeScript parser for LDAP schema definitions based on RFC 4512, using PEG.js grammar",
   "repository": "https://github.com/tacxou/parser_ldap_rfc4512.git",
+  "homepage": "https://github.com/tacxou/parser_ldap_rfc4512/",
+  "bugs": {
+    "url": "https://github.com/tacxou/parser_ldap_rfc4512/issues"
+  },
   "author": "tacxou <12997062+tacxou@users.noreply.github.com> (https://github.com/tacxou)",
   "contributors": [
     {
@@ -16,15 +20,29 @@
     }
   ],
   "license": "BSD-3-Clause",
+  "keywords": [
+    "ldap",
+    "rfc4512",
+    "schema",
+    "parser",
+    "openldap",
+    "typescript",
+    "cli"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -38,15 +56,21 @@
   ],
   "scripts": {
     "build:grammar": "node scripts/build-grammar.mjs",
-    "prebuild": "yarn build:grammar",
-    "build": "tsup",
+    "clean": "node scripts/clean.mjs",
+    "prebuild": "yarn clean && yarn build:grammar",
+    "build": "tsc --noEmit && tsup",
     "pretest": "yarn build:grammar",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cli": "vitest run test/cli.test.ts",
     "pretest:coverage": "yarn build:grammar",
     "test:coverage": "vitest run --coverage",
+    "test:scripts": "node --test scripts/tests/*.test.mjs",
+    "pretypecheck": "yarn build:grammar",
     "typecheck": "tsc --noEmit",
+    "package": "node scripts/package.mjs",
+    "package:check": "node scripts/package.mjs --check",
+    "docs:build": "node scripts/build-docs.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write ."
@@ -68,6 +92,11 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
   "packageManager": "yarn@1.22.22"
 }

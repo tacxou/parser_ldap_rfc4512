@@ -53,7 +53,7 @@ describe('RFC4512Parser - Multiple X-* Extensions Support', () => {
     const result = parser.parseSchema<LDAPAttributeTypeInterface>(ldifContent)
 
     expect(result.extensions).toBeDefined()
-    expect(Object.keys(result.extensions!)).toHaveLength(3)
+    expect(Object.keys(result.extensions ?? {})).toHaveLength(3)
   })
 
   /**
@@ -64,7 +64,7 @@ describe('RFC4512Parser - Multiple X-* Extensions Support', () => {
 
     expect(result.extensions).toBeDefined()
 
-    const extensionKeys = Object.keys(result.extensions!)
+    const extensionKeys = Object.keys(result.extensions ?? {})
     for (const key of extensionKeys) {
       expect(key).toMatch(/^X-[A-Z0-9-]+$/)
     }

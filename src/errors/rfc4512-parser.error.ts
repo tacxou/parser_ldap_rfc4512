@@ -160,7 +160,7 @@ export class RFC4512ParserError extends Error {
     }
 
     if (this.schemaDefinition) {
-      const preview = this.schemaDefinition.length > 100 ? this.schemaDefinition.substring(0, 100) + '...' : this.schemaDefinition
+      const preview = this.schemaDefinition.length > 100 ? `${this.schemaDefinition.substring(0, 100)}...` : this.schemaDefinition
       message += `\nSchema: ${preview}`
     }
 

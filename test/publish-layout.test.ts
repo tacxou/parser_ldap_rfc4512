@@ -39,7 +39,16 @@ beforeAll(() => {
 
 describe('package.json publish layout', () => {
   it('points main/module/types/bin/exports at files that exist after build', () => {
-    const declaredPaths = [pkg.main, pkg.module, pkg.types, pkg.bin['rfc4512-parser'], pkg.exports['.'].import, pkg.exports['.'].require, pkg.exports['.'].types]
+    const declaredPaths = [
+      pkg.main,
+      pkg.module,
+      pkg.types,
+      pkg.bin['rfc4512-parser'],
+      pkg.exports['.'].import.default,
+      pkg.exports['.'].import.types,
+      pkg.exports['.'].require.default,
+      pkg.exports['.'].require.types,
+    ]
 
     for (const declaredPath of declaredPaths) {
       const resolved = join(repoRoot, declaredPath)
@@ -64,7 +73,7 @@ describe('installed package (simulated node_modules layout)', () => {
     // `readFileSync(path.join(__dirname, './_grammars/rfc4512.pegjs'))`
     // could not survive.
     installDir = join(tmpdir(), `parser-install-test-${randomUUID()}`)
-    moduleDir = join(installDir, 'node_modules', '@tacxou', 'parser_ldap_rfc4512')
+    moduleDir = join(installDir, 'node_modules', ...pkg.name.split('/'))
     mkdirSync(moduleDir, { recursive: true })
     cpSync(join(repoRoot, 'dist'), join(moduleDir, 'dist'), { recursive: true })
     cpSync(join(repoRoot, 'package.json'), join(moduleDir, 'package.json'))

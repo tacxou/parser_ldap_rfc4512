@@ -99,8 +99,9 @@ describe('RFC4512Parser - mailSieveRuleSource AttributeType LDIF (with X-ORIGIN 
 
     expect(result.extensions).toBeDefined()
     expect(typeof result.extensions).toBe('object')
-    expect(Object.keys(result.extensions!)).toHaveLength(1)
-    expect(Object.keys(result.extensions!)[0]).toBe('X-ORIGIN')
+    const extensionKeys = Object.keys(result.extensions ?? {})
+    expect(extensionKeys).toHaveLength(1)
+    expect(extensionKeys[0]).toBe('X-ORIGIN')
   })
 
   /**
